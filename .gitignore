@@ -1,6 +1,7 @@
 # Virtual environment
 bin/
 lib/
+lib64/
 include/
 share/
 etc/
@@ -11,13 +12,17 @@ __pycache__/
 *.pyc
 *.pyo
 *.egg-info/
+dist/
+build/
 
-# Project artifacts
+# Project artifacts (auto-generated)
 checkpoints/
 logs/
 outputs/
 .worktrees/
 data/
+results/
 
 # OS
 .DS_Store
+Thumbs.db

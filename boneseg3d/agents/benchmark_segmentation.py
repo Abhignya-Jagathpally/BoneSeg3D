@@ -269,15 +269,19 @@ def benchmark_segmentation_performance(cfg: Any) -> None:
     """
     log.info("=== benchmark_segmentation_performance ===")
 
-    results_dir         = Path("results")
+    # Resolve paths relative to repo_root (not worktree cwd) so EVOLVE
+    # phase can always find results/metrics.json in the main tree.
+    repo_root = Path(getattr(cfg, "repo_root", ".")).resolve()
+
+    results_dir         = repo_root / "results"
     results_dir.mkdir(parents=True, exist_ok=True)
 
-    gt_dir              = Path(cfg.data.nnunet_dir) / "Task001_BoneLesion" / "labelsTr"
-    nnunet_pred_dir     = Path("outputs/predictions/nnunet")
-    monai_softmax_dir   = Path("outputs/models/swinunetr/softmax_test")
-    nnunet_softmax_dir  = Path("outputs/predictions/nnunet")
+    gt_dir              = repo_root / cfg.data.nnunet_dir / "Task001_BoneLesion" / "labelsTr"
+    nnunet_pred_dir     = repo_root / "outputs" / "predictions" / "nnunet"
+    monai_softmax_dir   = repo_root / "outputs" / "models" / "swinunetr" / "softmax_test"
+    nnunet_softmax_dir  = repo_root / "outputs" / "predictions" / "nnunet"
     ensemble_pred_dir   = fuse_ensemble_predictions(
-        nnunet_softmax_dir, monai_softmax_dir, Path("outputs/predictions")
+        nnunet_softmax_dir, monai_softmax_dir, repo_root / "outputs" / "predictions"
     )
 
     # Evaluate each model
