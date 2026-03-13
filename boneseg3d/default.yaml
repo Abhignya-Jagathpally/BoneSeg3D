@@ -1,0 +1,86 @@
+# BoneSeg3D — Default Configuration
+# ─────────────────────────────────
+# All paths are relative to the repo root.
+# Use ${ENV_VAR} syntax for secrets (e.g. TCIA API keys).
+
+version: "0.1.0"
+repo_root: "."
+
+# ── Orchestration ──────────────────────────────────────────────────────────────
+orchestration:
+  mode: "subagent"          # "subagent" | "inline"
+  keep_worktrees: true      # false = remove worktrees on task completion
+  max_parallel_tasks: 2     # limit concurrent GPU worktrees
+
+# ── Data ───────────────────────────────────────────────────────────────────────
+data:
+  tcia_collection:      "Multiple_Myeloma_seg"
+  tcia_api_key:         "${TCIA_API_KEY}"          # set in environment
+  raw_dicom_dir:        "data/raw_dicom"
+  nifti_dir:            "data/nifti"
+  label_dir:            "data/labels"
+  nnunet_dir:           "data/nnunet"
+  longitudinal_dir:     "data/longitudinal"
+  split_json:           "data/nnunet/splits_final.json"
+  split_seed:           42
+  n_patients_expected:  50
+  download_workers:     4
+
+# ── nnU-Net ────────────────────────────────────────────────────────────────────
+nnunet:
+  task_id:       "001"
+  task_name:     "Task001_BoneLesion"
+  configuration: "3d_fullres"
+  trainer:       "nnUNetTrainerV2"
+  folds:         [0, 1, 2, 3, 4]
+  results_dir:   "outputs/nnunet_results"
+  preprocessed:  "data/nnunet_preprocessed"
+
+# ── MONAI SwinUNETR ────────────────────────────────────────────────────────────
+monai:
+  roi_size:                  [128, 128, 128]
+  in_channels:               1
+  out_channels:              2
+  feature_size:              48
+  max_epochs:                300
+  val_interval:              5
+  learning_rate:             1.0e-4
+  weight_decay:              1.0e-5
+  batch_size:                2
+  sw_batch_size:             4
+  overlap:                   0.5
+  amp:                       true
+  checkpoint_every_n_epochs: 50
+  output_dir:                "outputs/models/swinunetr"
+
+# ── Ensemble fusion ────────────────────────────────────────────────────────────
+ensemble:
+  nnunet_weight: 0.5
+  monai_weight:  0.5
+  threshold:     0.5
+
+# ── Monitoring & SLA ──────────────────────────────────────────────────────────
+monitoring:
+  alert_channels:           ["log"]     # extend with "slack", "email"
+  heartbeat_interval_sec:   300
+  max_inference_time_sec:   120
+  min_dice_vs_baseline:     0.65
+
+# ── Ideation ──────────────────────────────────────────────────────────────────
+ideation:
+  use_cases:
+    - "UC-01"
+    - "UC-02"
+    - "UC-03"
+    - "UC-04"
+    - "UC-05"
+
+# ── Design ────────────────────────────────────────────────────────────────────
+design:
+  schema_version: "1.0.0"
+
+# ── Evolve ────────────────────────────────────────────────────────────────────
+evolve:
+  min_dice_improvement:      0.02
+  min_hd95_improvement_mm:   1.0
+  max_versions_retained:     3

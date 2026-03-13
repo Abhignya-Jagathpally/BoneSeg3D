@@ -1,0 +1,23 @@
+# Virtual environment
+bin/
+lib/
+include/
+share/
+etc/
+pyvenv.cfg
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Project artifacts
+checkpoints/
+logs/
+outputs/
+.worktrees/
+data/
+
+# OS
+.DS_Store
